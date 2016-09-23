@@ -3,7 +3,6 @@
 namespace ADT\Mailer\Services;
 
 use Nette\Mail\Message;
-use Nette\Mail\SendException;
 
 
 class Mailer implements \Nette\Mail\IMailer {
