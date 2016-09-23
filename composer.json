@@ -1,0 +1,22 @@
+{
+    "name": "adt/mailer",
+    "description": "The ultimate Nette mailing solution.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "AppsDevTeam",
+            "email": "hello@appsdevteam.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "nette/mail": "^2.3",
+        "tracy/tracy": "^2.3"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {"ADT\\Mailer\\": "src/"}
+    }
+}
