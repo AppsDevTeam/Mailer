@@ -54,6 +54,10 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 			);
 		}
 
+		if ($config['error']['mode'] === static::ERROR_MODE_SILENT && empty($config['error']['logDir'])) {
+			throw new \Nette\UnexpectedValueException('Specify mail log directory.');
+		}
+
 		return $config;
 	}
 

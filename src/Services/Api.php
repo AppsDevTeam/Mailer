@@ -47,23 +47,46 @@ class Api {
 		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
 	}
 
+	/**
+	 * @param \Nette\Mail\Message $mail
+	 * @return array
+	 */
+	protected function serializeMessage(\Nette\Mail\Message $mail) {
+		$result = [
+			'from' => $mail->getFrom(),
+			'subject' => $mail->getSubject(),
+			'message' => $mail->generateMessage(),
+		];
+
+		foreach (['to', 'cc', 'bcc'] as $header) {
+			$result[$header] = $mail->getHeader(ucfirst($header));
+		}
+
+		return $result;
+	}
+
 	public function send(\Nette\Mail\Message $mail) {
-		// TODO serialize message
-		$postData = serialize($mail);
+		$postData = \Nette\Utils\Json::encode($this->serializeMessage($mail));
 
 		// set message
 		curl_setopt($this->curl, CURLOPT_POSTFIELDS, $postData);
 
 		// send message
 		$response = curl_exec($this->curl);
-		$info = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
+		$httpCode = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
 
-		// success check
-		if (false !== $response && substr($info, 0, 1) === '2') {
-			return;
+		try {
+			$status = \Nette\Utils\Json::decode($response);
+
+			// success check
+			if (substr($httpCode, 0, 1) === '2' && $status->status === 'ok') {
+				return;
+			}
+		} catch (\Nette\Utils\JsonException $e) {
+			// error
 		}
 
-		$error = 'Could not transfer mail to remote server (ERROR ' . $info . ').';
+		$error = 'Could not transfer mail to remote server (' . (!empty($status) ? $status->error : $httpCode) . ').';
 		if ($this->config['error']['mode'] === AdtMailerExtension::ERROR_MODE_EXCEPTION) {
 			throw new ApiException($error);
 		} else {
