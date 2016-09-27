@@ -13,7 +13,8 @@
     "require": {
         "nette/mail": "^2.3",
         "tracy/tracy": "^2.3",
-        "nette/di": "^2.3"
+        "nette/di": "^2.3",
+        "nette/utils": "^2.3"
     },
     "require-dev": {
     },
