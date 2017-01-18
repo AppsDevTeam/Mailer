@@ -15,16 +15,18 @@ composer require adt/mailer
 config.neon:
 ```neon
 extensions:
-	adtMailer:
-		remote:
-			api: yourAdtMailApiInstance.com:1234
-			key: yourPrivateKey
-		error:
-			# mode: silent => log and continue
-			# mode: exception => throw 
-			mode: silent
-			# all undelivered messages are stored here (applies to mode: silent)
-			logDir: %logDir%/adt_mailer
+	adtMailer: ADT\Mailer\DI\AdtMailerExtension
+
+adtMailer:
+	remote:
+		api: yourAdtMailApiInstance.com:1234
+		key: yourPrivateKey
+	error:
+		# mode: silent => log and continue
+		# mode: exception => throw 
+		mode: silent
+		# all undelivered messages are stored here (applies to mode: silent)
+		logDir: %logDir%/adt_mailer
 ```
 
 ## Usage
