@@ -8,7 +8,13 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 
 	const ERROR_MODE_SILENT = 'silent';
 	const ERROR_MODE_EXCEPTION = 'exception';
-	const ERROR_MODES = [ self::ERROR_MODE_SILENT, self::ERROR_MODE_EXCEPTION ];
+
+	/**
+	 * @return array
+	 */
+	static function errorModes() {
+		return [ self::ERROR_MODE_SILENT, self::ERROR_MODE_EXCEPTION ];
+	}
 
 	public function loadConfiguration() {
 		$config = $this->validateConfig(
@@ -48,7 +54,7 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 			throw new \Nette\UnexpectedValueException('Specify authentication key.');
 		}
 
-		if (!in_array($config['error']['mode'], static::ERROR_MODES, TRUE)) {
+		if (!in_array($config['error']['mode'], static::errorModes(), TRUE)) {
 			throw new \Nette\UnexpectedValueException(
 				'Error mode can be either "' . static::ERROR_MODE_SILENT . '" or "' . static::ERROR_MODE_EXCEPTION . '".'
 			);
