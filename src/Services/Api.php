@@ -31,8 +31,10 @@ class Api {
 		// do not wait more than 3s
 		curl_setopt($this->curl, CURLOPT_TIMEOUT_MS, 3000);
 
-		// follow redirects
-		curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, TRUE);
+		if (PHP_VERSION_ID >= 50600) {
+			// follow redirects (throws 'CURLOPT_FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set' on 5.5)
+			curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, TRUE);
+		}
 
 		// disable cache, set content type, keep alive
 		curl_setopt(
