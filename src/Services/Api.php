@@ -35,12 +35,13 @@ class Api {
 		curl_setopt(
 			$this->curl,
 			CURLOPT_HTTPHEADER,
-			array(
+			[
 				'Cache-Control: no-cache',
 				'Content-Type: application/octet-stream',
 				'Connection: Keep-Alive',
 				'Keep-Alive: 300',
-			)
+				'Expect:', // do not send Expect: 100-continue
+			]
 		);
 
 		// do not display result
@@ -58,7 +59,7 @@ class Api {
 			'message' => $mail->generateMessage(),
 		];
 
-		foreach (['to', 'cc', 'bcc'] as $header) {
+		foreach ([ 'to', 'cc', 'bcc' ] as $header) {
 			$result[$header] = $mail->getHeader(ucfirst($header));
 		}
 
@@ -86,7 +87,12 @@ class Api {
 			// error
 		}
 
-		$error = 'Could not transfer mail to remote server (' . (!empty($status) ? $status->error : $httpCode) . ').';
+		$error = 'Could not transfer mail to remote server (' . (
+			!empty($status)
+				? $status->error
+				: $httpCode
+			) . ').';
+
 		if ($this->config['error']['mode'] === AdtMailerExtension::ERROR_MODE_EXCEPTION) {
 			throw new ApiException($error);
 		} else {
