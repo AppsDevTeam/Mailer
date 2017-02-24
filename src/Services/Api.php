@@ -95,7 +95,7 @@ class Api {
 		$error = 'Could not transfer mail to remote server (' . (
 			!empty($status)
 				? $status->error
-				: $httpCode
+				: $httpCode . ' ' . curl_error($this->curl)
 			) . ').';
 
 		if ($this->config['error']['mode'] === AdtMailerExtension::ERROR_MODE_EXCEPTION) {
