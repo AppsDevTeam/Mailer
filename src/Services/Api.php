@@ -53,6 +53,16 @@ class Api {
 		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
 	}
 
+	protected function getSuppressionControlAddress(\Nette\Mail\Message $mail) {
+		$address = $this->config['suppressionControlAddress'];
+
+		if (is_callable($address, FALSE)) {
+			return $address($mail);
+		} else {
+			return $address;
+		}
+	}
+
 	/**
 	 * @param \Nette\Mail\Message $mail
 	 * @return array
@@ -62,6 +72,7 @@ class Api {
 			'from' => $mail->getFrom(),
 			'subject' => $mail->getSubject(),
 			'message' => $mail->generateMessage(),
+			'suppressionControlAddress' => $this->getSuppressionControlAddress($mail),
 		];
 
 		foreach ([ 'to', 'cc', 'bcc' ] as $header) {

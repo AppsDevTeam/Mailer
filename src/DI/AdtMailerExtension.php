@@ -28,6 +28,7 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 					'logDir' => '',
 				],
 				'autowireMailer' => FALSE,
+				'suppressionControlAddress' => NULL,
 			],
 			$this->config
 		);
@@ -62,6 +63,10 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 
 		if ($config['error']['mode'] === static::ERROR_MODE_SILENT && empty($config['error']['logDir'])) {
 			throw new \Nette\UnexpectedValueException('Specify mail log directory.');
+		}
+
+		if (empty($config['suppressionControlAddress']) || !(is_string($config['suppressionControlAddress']) || is_callable($config['suppressionControlAddress']))) {
+			throw new \Nette\UnexpectedValueException('Specify suppression control address as string or method (e.g. @ServiceClass::method).');
 		}
 
 		return $config;
