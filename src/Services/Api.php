@@ -3,14 +3,12 @@
 namespace ADT\Mailer\Services;
 
 use ADT\Mailer\DI\AdtMailerExtension;
+use GuzzleHttp\Client;
 
 class Api {
 
 	/** @var array */
 	protected $config;
-
-	/** @var resource */
-	protected $curl;
 
 	/** @var \Tracy\ILogger */
 	protected $logger;
@@ -18,39 +16,6 @@ class Api {
 	public function __construct(array $config, \Tracy\ILogger $logger) {
 		$this->logger = $logger;
 		$this->config = $config;
-		$this->curl = curl_init();
-
-		// set remote URL
-		$endPoint = rtrim($this->config['remote']['api'], '/');
-		curl_setopt(
-			$this->curl,
-			CURLOPT_URL,
-			$endPoint . '/mail/send?key=' . $this->config['remote']['key']
-		);
-
-		// do not wait more than 3s
-		curl_setopt($this->curl, CURLOPT_TIMEOUT_MS, 3000);
-
-		if (PHP_VERSION_ID >= 50600) {
-			// follow redirects (throws 'CURLOPT_FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set' on 5.5)
-			curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, TRUE);
-		}
-
-		// disable cache, set content type, keep alive
-		curl_setopt(
-			$this->curl,
-			CURLOPT_HTTPHEADER,
-			[
-				'Cache-Control: no-cache',
-				'Content-Type: application/octet-stream',
-				'Connection: Keep-Alive',
-				'Keep-Alive: 300',
-				'Expect:', // do not send Expect: 100-continue
-			]
-		);
-
-		// do not display result
-		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
 	}
 
 	protected function getSuppressionControlAddress(\Nette\Mail\Message $mail) {
@@ -82,36 +47,41 @@ class Api {
 		return $result;
 	}
 
+	/**
+	 * @param \Nette\Mail\Message $mail
+	 * @return bool
+	 * @throws \Exception
+	 */
 	public function send(\Nette\Mail\Message $mail) {
-		$postData = \Nette\Utils\Json::encode($this->serializeMessage($mail));
 
-		// set message
-		curl_setopt($this->curl, CURLOPT_POSTFIELDS, $postData);
+		$postData = \GuzzleHttp\json_encode($this->serializeMessage($mail));
+		$endPoint = rtrim($this->config['remote']['api'], '/');
 
-		// send message
-		$response = curl_exec($this->curl);
-		$httpCode = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
+		$client = new Client;
 
 		try {
-			$status = \Nette\Utils\Json::decode($response);
+			$client->request("POST", $endPoint . '/mail/send?key=' . $this->config['remote']['key'], [
+				'headers' => [
+					'Cache-Control'=> 'no-cache',
+					'Content-Type' => 'application/octet-stream',
+					'Connection' => 'Keep-Alive',
+					'Keep-Alive' => '300',
+					'Expect' => NULL, // do not send Expect: 100-continue
+				],
+				"body" => $postData,
+				"timeout" => 3,
+			]);
 
-			// success check
-			if (substr($httpCode, 0, 1) === '2' && $status->status === 'ok') {
-				return;
+			return TRUE;
+
+		} catch (\Exception $e) {
+
+			if ($this->config['error']['mode'] === AdtMailerExtension::ERROR_MODE_EXCEPTION) {
+				throw $e;
 			}
-		} catch (\Nette\Utils\JsonException $e) {
-			// error
-		}
 
-		$error = 'Could not transfer mail to remote server (' . (
-			!empty($status)
-				? $status->error
-				: $httpCode . ' ' . curl_error($this->curl)
-			) . ').';
+			$error = 'Could not transfer mail to remote server (' . $e->getMessage() . ').';
 
-		if ($this->config['error']['mode'] === AdtMailerExtension::ERROR_MODE_EXCEPTION) {
-			throw new ApiException($error);
-		} else {
 			// create log directory
 			if (!file_exists($this->config['error']['logDir'])) {
 				mkdir($this->config['error']['logDir'], 0777, TRUE);
@@ -123,6 +93,8 @@ class Api {
 
 			// send report
 			$this->logger->log($error . PHP_EOL . PHP_EOL . $mailFile, \Tracy\ILogger::EXCEPTION);
+
+			return FALSE;
 		}
 	}
 }
