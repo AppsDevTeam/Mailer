@@ -65,7 +65,7 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 			throw new \Nette\UnexpectedValueException('Specify mail log directory.');
 		}
 
-		if (empty($config['suppressionControlAddress']) || !(is_string($config['suppressionControlAddress']) || is_callable($config['suppressionControlAddress']))) {
+		if (empty($config['suppressionControlAddress']) || !(is_string($config['suppressionControlAddress']) || is_callable(array_map(function($value) { return ltrim($value, '@'); }, $config['suppressionControlAddress'])))) {
 			throw new \Nette\UnexpectedValueException('Specify suppression control address as string or method (e.g. @ServiceClass::method).');
 		}
 
