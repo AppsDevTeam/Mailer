@@ -13,7 +13,7 @@ class Mailer implements \Nette\Mail\IMailer {
 		$this->apiService = $api;
 	}
 
-	function send(Message $mail) {
+	function send(Message $mail): void {
 		$this->apiService->send($mail);
 	}
 
