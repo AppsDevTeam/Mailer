@@ -44,7 +44,7 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 			->setAutowired($config['autowireMailer']);
 	}
 
-	public function validateConfig(array $expected, array $config = NULL, $name = NULL) {
+	public function validateConfig(array $expected, array $config = NULL, $name = NULL) : array {
 		$config = parent::validateConfig($expected, $config, $name);
 
 		if (empty($config['remote']['api'])) {
@@ -71,6 +71,5 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 
 		return $config;
 	}
-
 
 }
