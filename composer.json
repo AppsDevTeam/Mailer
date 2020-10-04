@@ -12,9 +12,9 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=5.5.0",
-        "nette/mail": "^2.3",
+        "nette/mail": "^2.3 || ^3.0",
         "tracy/tracy": "^2.3",
-        "nette/di": "^2.3",
+        "nette/di": "^2.3 || ^3.0",
         "guzzlehttp/guzzle": "^6.3"
     },
     "require-dev": {
