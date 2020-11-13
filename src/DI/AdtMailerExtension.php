@@ -51,8 +51,8 @@ class AdtMailerExtension extends \Nette\DI\CompilerExtension {
 			throw new \Nette\UnexpectedValueException('Specify remote API endpoint.');
 		}
 
-		if (empty($config['remote']['key'])) {
-			throw new \Nette\UnexpectedValueException('Specify authentication key.');
+		if (empty($config['remote']['key']) || !(is_string($config['remote']['key']) || is_callable($config['remote']['key']))) {
+			throw new \Nette\UnexpectedValueException('Specify authentication key as string or method (e.g. @ServiceClass::method).');
 		}
 
 		if (!in_array($config['error']['mode'], static::errorModes(), TRUE)) {

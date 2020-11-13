@@ -18,6 +18,44 @@ class Api {
 	public function __construct(array $config, \Tracy\ILogger $logger) {
 		$this->logger = $logger;
 		$this->config = $config;
+	}
+
+	protected function getSuppressionControlAddress(\Nette\Mail\Message $mail) {
+		return $this->processCallableOption($this->config['suppressionControlAddress'], $mail);
+	}
+
+	protected function getRemoteKey(\Nette\Mail\Message $mail) {
+		return $this->processCallableOption($this->config['ip_pool'], $mail);
+	}
+
+	protected function processCallableOption($value, \Nette\Mail\Message $mail) {
+		if (is_callable($value, FALSE)) {
+			return $value($mail);
+		} else {
+			return $value;
+		}
+	}
+
+	/**
+	 * @param \Nette\Mail\Message $mail
+	 * @return array
+	 */
+	protected function serializeMessage(\Nette\Mail\Message $mail) {
+		$result = [
+			'from' => $mail->getFrom(),
+			'subject' => $mail->getSubject(),
+			'message' => $mail->generateMessage(),
+			'suppressionControlAddress' => $this->getSuppressionControlAddress($mail),
+		];
+
+		foreach ([ 'to', 'cc', 'bcc' ] as $header) {
+			$result[$header] = $mail->getHeader(ucfirst($header));
+		}
+
+		return $result;
+	}
+
+	public function send(\Nette\Mail\Message $mail) {
 		$this->curl = curl_init();
 
 		// set remote URL
@@ -25,7 +63,7 @@ class Api {
 		curl_setopt(
 			$this->curl,
 			CURLOPT_URL,
-			$endPoint . '/mail/send?key=' . $this->config['remote']['key']
+			$endPoint . '/mail/send?key=' . $this->getRemoteKey()
 		);
 
 		// do not wait more than 3s
@@ -51,38 +89,7 @@ class Api {
 
 		// do not display result
 		curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
-	}
 
-	protected function getSuppressionControlAddress(\Nette\Mail\Message $mail) {
-		$address = $this->config['suppressionControlAddress'];
-
-		if (is_callable($address, FALSE)) {
-			return $address($mail);
-		} else {
-			return $address;
-		}
-	}
-
-	/**
-	 * @param \Nette\Mail\Message $mail
-	 * @return array
-	 */
-	protected function serializeMessage(\Nette\Mail\Message $mail) {
-		$result = [
-			'from' => $mail->getFrom(),
-			'subject' => $mail->getSubject(),
-			'message' => $mail->generateMessage(),
-			'suppressionControlAddress' => $this->getSuppressionControlAddress($mail),
-		];
-
-		foreach ([ 'to', 'cc', 'bcc' ] as $header) {
-			$result[$header] = $mail->getHeader(ucfirst($header));
-		}
-
-		return $result;
-	}
-
-	public function send(\Nette\Mail\Message $mail) {
 		$postData = \Nette\Utils\Json::encode($this->serializeMessage($mail));
 
 		// set message
