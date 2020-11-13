@@ -19,12 +19,18 @@ class Api {
 	}
 
 	protected function getSuppressionControlAddress(\Nette\Mail\Message $mail) {
-		$address = $this->config['suppressionControlAddress'];
+		return $this->processCallableOption($this->config['suppressionControlAddress'], $mail);
+	}
 
-		if (is_callable($address, FALSE)) {
-			return $address($mail);
+	protected function getRemoteKey(\Nette\Mail\Message $mail) {
+		return $this->processCallableOption($this->config['ip_pool'], $mail);
+	}
+
+	protected function processCallableOption($value, \Nette\Mail\Message $mail) {
+		if (is_callable($value, FALSE)) {
+			return $value($mail);
 		} else {
-			return $address;
+			return $value;
 		}
 	}
 
@@ -60,7 +66,7 @@ class Api {
 		$client = new Client;
 
 		try {
-			$client->request("POST", $endPoint . '/mail/send?key=' . $this->config['remote']['key'], [
+			$client->request("POST", $endPoint . '/mail/send?key=' . $this->getRemoteKey(), [
 				'headers' => [
 					'Cache-Control'=> 'no-cache',
 					'Content-Type' => 'application/octet-stream',

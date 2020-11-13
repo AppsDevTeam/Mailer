@@ -20,13 +20,18 @@ extensions:
 adtMailer:
 	remote:
 		api: yourAdtMailApiInstance.com:1234
+
+		# can be either static string or method, required
 		key: yourPrivateKey
+
 	error:
 		# mode: silent => log and continue
 		# mode: exception => throw 
 		mode: silent
+
 		# all undelivered messages are stored here (applies to mode: silent)
 		logDir: %logDir%/adt_mailer
+
 	# if recipient is suppressed, this address receives notification and delist link
 	# can be either static string or method, required
 	suppressionControlAddress: @App\Model\SuppressionControl::decide
