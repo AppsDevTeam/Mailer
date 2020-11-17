@@ -23,7 +23,7 @@ class Api {
 	}
 
 	protected function getRemoteKey(\Nette\Mail\Message $mail) {
-		return $this->processCallableOption($this->config['ip_pool'], $mail);
+		return $this->processCallableOption($this->config['remote']['key'], $mail);
 	}
 
 	protected function processCallableOption($value, \Nette\Mail\Message $mail) {
@@ -66,7 +66,7 @@ class Api {
 		$client = new Client;
 
 		try {
-			$client->request("POST", $endPoint . '/mail/send?key=' . $this->getRemoteKey(), [
+			$client->request("POST", $endPoint . '/mail/send?key=' . $this->getRemoteKey($mail), [
 				'headers' => [
 					'Cache-Control'=> 'no-cache',
 					'Content-Type' => 'application/octet-stream',
