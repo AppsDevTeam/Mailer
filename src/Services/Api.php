@@ -25,7 +25,7 @@ class Api {
 	}
 
 	protected function getRemoteKey(\Nette\Mail\Message $mail) {
-		return $this->processCallableOption($this->config['ip_pool'], $mail);
+		return $this->processCallableOption($this->config['remote']['key'], $mail);
 	}
 
 	protected function processCallableOption($value, \Nette\Mail\Message $mail) {
@@ -63,7 +63,7 @@ class Api {
 		curl_setopt(
 			$this->curl,
 			CURLOPT_URL,
-			$endPoint . '/mail/send?key=' . $this->getRemoteKey()
+			$endPoint . '/mail/send?key=' . $this->getRemoteKey($mail)
 		);
 
 		// do not wait more than 3s
