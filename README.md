@@ -33,7 +33,7 @@ adtMailer:
 		logDir: %logDir%/adt_mailer
 
 	# if recipient is suppressed, this address receives notification and delist link
-	# can be either static string or method, required
+	# can be either an email address, url or a callback returning an email address or url
 	suppressionControlAddress: @App\Model\SuppressionControl::decide
 ```
 
