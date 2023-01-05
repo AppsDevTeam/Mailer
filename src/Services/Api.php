@@ -50,6 +50,10 @@ class Api {
 			$result[$header] = $mail->getHeader(ucfirst($header));
 		}
 
+		if ($mail->getHeader('Reply-To') !== null) {
+			$result['reply-to'] = $mail->getHeader('Reply-To');
+		}
+
 		return $result;
 	}
 
